@@ -2,8 +2,9 @@
 
 Repete os passos do notebook (tratamento, regressao, EDA, classificacao e desafio)
 com as mesmas sementes, para que o site mostre os mesmos numeros do relatorio.
-A busca de hiperparametros nao e refeita: os parametros encontrados nas duas buscas
-ficam fixos em BUSCAS_HYPEROPT e so o ajuste final de cada Random Forest e reexecutado.
+A busca de hiperparametros nao e refeita: os parametros encontrados pelo Hyperopt no notebook
+ficam fixos em BUSCAS_HYPEROPT e so o ajuste final do Random Forest e reexecutado.
+As duplicatas da wine_classification.csv sao removidas antes do split, como no notebook.
 
 Uso: python site/build_data.py   (leva cerca de um minuto)
 """
@@ -37,15 +38,20 @@ RAIZ = Path(__file__).resolve().parents[1]
 DADOS = RAIZ / 'data'
 SAIDA = Path(__file__).resolve().parent / 'data' / 'data.js'
 
-# parametros encontrados pelo Hyperopt no notebook (50 avaliacoes, recall macro em CV de 5 partes)
+# parametros encontrados pelo Hyperopt no notebook (50 avaliacoes, recall macro em CV de 5 partes, scaler no pipeline)
 BUSCAS_HYPEROPT = [
-    {'busca': 1, 'recall_cv': 0.832, 'scaler_no_pipeline': False,
-     'params': {'criterion': 'entropy', 'max_depth': 24, 'max_features': 'log2',
-                'min_samples_leaf': 1, 'min_samples_split': 6, 'n_estimators': 200}},
-    {'busca': 2, 'recall_cv': 0.834, 'scaler_no_pipeline': True,
-     'params': {'criterion': 'gini', 'max_depth': 30, 'max_features': 'log2',
-                'min_samples_leaf': 1, 'min_samples_split': 4, 'n_estimators': 450}},
+    {'busca': 1, 'modelo': 'Random Forest', 'recall_cv': 0.582,
+     'params': {'criterion': 'gini', 'max_depth': 15, 'max_features': 'sqrt',
+                'min_samples_leaf': 1, 'min_samples_split': 6, 'n_estimators': 150}},
+    {'busca': 2, 'modelo': 'SVM', 'recall_cv': 0.677,
+     'params': {'C': 97.2495, 'gamma': 0.0293}},
 ]
+
+
+def estimador_busca(b):
+    if b['modelo'] == 'SVM':
+        return SVC(**b['params'], kernel='rbf')
+    return RandomForestClassifier(**b['params'], random_state=12, n_jobs=-1)
 
 
 def limpa(o):
@@ -249,7 +255,11 @@ D['eda'] = {
 }
 
 # ---------------------------------------------------------------- classificacao da qualidade
-dc = pd.read_csv(DADOS / 'wine_classification.csv')
+dc_bruto = pd.read_csv(DADOS / 'wine_classification.csv')
+# level_0 e index sao identificadores; as duplicatas sao removidas antes do split, como no notebook
+colunas_dados = dc_bruto.columns.drop(['level_0', 'index'])
+duplicadas = int(dc_bruto.duplicated(subset=colunas_dados).sum())
+dc = dc_bruto.drop_duplicates(subset=colunas_dados).reset_index(drop=True)
 enc = LabelEncoder()
 yq = enc.fit_transform(dc['quality'])
 Xq = dc.drop(columns=['quality', 'level_0', 'index'])
@@ -286,17 +296,19 @@ for nome, m in modelos_q:
 imp = pd.DataFrame(importancias, index=Xq_tr.columns)
 imp = imp.loc[imp.mean(axis=1).sort_values().index]
 
-rf_otim = []
+rf_otim, pipes_busca = [], {}
 for b in BUSCAS_HYPEROPT:
-    if b['scaler_no_pipeline']:
-        rf = Pipeline([('scaler', StandardScaler()),
-                       ('modelo', RandomForestClassifier(**b['params'], random_state=12, n_jobs=-1))]).fit(Xq_tr, yq_tr)
-        p, pr = rf.predict(Xq_te), rf.predict_proba(Xq_te)
-    else:
-        rf = RandomForestClassifier(**b['params'], random_state=12, n_jobs=-1).fit(Xq_tr_e, yq_tr)
-        p, pr = rf.predict(Xq_te_e), rf.predict_proba(Xq_te_e)
-    rf_otim.append({'busca': b['busca'], 'params': b['params'], 'recall_cv': b['recall_cv'],
-                    'teste': {**metricas_cls(yq_te, p), 'auc': roc_auc_score(yq_te, pr, multi_class='ovr')}})
+    pipe = Pipeline([('scaler', StandardScaler()), ('modelo', estimador_busca(b))]).fit(Xq_tr, yq_tr)
+    p = pipe.predict(Xq_te)
+    if hasattr(pipe, 'predict_proba'):
+        auc_b = roc_auc_score(yq_te, pipe.predict_proba(Xq_te), multi_class='ovr')
+    else:  # SVM sem probability: decision_function, uma coluna por classe
+        sc_b = pipe.decision_function(Xq_te)
+        yb = label_binarize(yq_te, classes=pipe.classes_)
+        auc_b = float(np.mean([auc(*roc_curve(yb[:, i], sc_b[:, i])[:2]) for i in range(len(pipe.classes_))]))
+    pipes_busca[b['modelo']] = pipe
+    rf_otim.append({'busca': b['busca'], 'modelo': b['modelo'], 'params': b['params'], 'recall_cv': b['recall_cv'],
+                    'teste': {**metricas_cls(yq_te, p), 'auc': auc_b}})
 
 nb = GaussianNB().fit(Xq_tr_e, yq_tr)
 p_nb = nb.predict(Xq_te_e)
@@ -312,9 +324,10 @@ for cl in sorted(np.unique(yq_tr)):
                         'negativas': neg, 'total': pos + neg, 'pares': int(len(pares_cl))})
 
 D['classificacao'] = {
-    'n': int(len(dc)), 'n_treino': int(len(Xq_tr)), 'n_teste': int(len(Xq_te)),
+    'n_bruto': int(len(dc_bruto)), 'n': int(len(dc)), 'n_treino': int(len(Xq_tr)), 'n_teste': int(len(Xq_te)),
+    'dist_quality_bruto': dc_bruto['quality'].astype(int).value_counts().sort_index().to_dict(),
     'dist_quality': dc['quality'].astype(int).value_counts().sort_index().to_dict(),
-    'duplicadas': int(Xq.assign(q=dc['quality']).duplicated().sum()),
+    'duplicadas': duplicadas,
     'classes': [int(c) for c in enc.classes_],
     'resultados': resultados, 'roc': roc_out,
     'importancias': [{'feature': f, 'rf': imp.loc[f, 'Random Forest'], 'xgb': imp.loc[f, 'XGBoost']} for f in imp.index],
@@ -372,6 +385,20 @@ dd['cor_prevista'] = pd.Series(pipe_cor.predict(Xd), index=dd.index).map({0: 'ti
 dd['prob_tinto'] = pipe_cor.predict_proba(Xd)[:, list(pipe_cor.classes_).index(0)]
 onze = dd[dd['quality'] >= 8].sort_values(['quality', 'prob_tinto'], ascending=[False, False])
 
+# checagem do plano: os modelos de qualidade otimizados aplicados ao desafio, comparados com a coluna quality
+feats_q = Xq_tr.columns.tolist()
+concord = {nome: float((enc.inverse_transform(pipe.predict(dd.loc[:, feats_q])).astype(int) == dd['quality'].values).mean())
+           for nome, pipe in pipes_busca.items()}
+nota_prev = enc.inverse_transform(pipes_busca['Random Forest'].predict(dd.loc[:, feats_q])).astype(int)
+modelo_qualidade = {
+    'concordancia': concord['Random Forest'],
+    'concordancia_por_modelo': concord,
+    'acaso': 1 / len(enc.classes_),
+    'dist_prevista': pd.Series(nota_prev).value_counts().sort_index().to_dict(),
+    'tintos_nota8_prevista': int(((nota_prev == 8) & (dd['cor_prevista'] == 'tinto')).sum()),
+    'medianas': [{'col': c, 'treino': Xq_tr[c].median(), 'desafio': dd[c].median()} for c in feats_q],
+}
+
 D['desafio'] = {
     'n': int(len(dd)),
     'dist_quality': dd['quality'].astype(int).value_counts().sort_index().to_dict(),
@@ -380,6 +407,7 @@ D['desafio'] = {
     'onze': [{'quality': int(r['quality']), 'cor_prevista': r['cor_prevista'], 'prob_tinto': r['prob_tinto'],
               'alcohol': r['alcohol'], 'residual_sugar': r['residual sugar'], 'sulphates': r['sulphates'],
               'volatile_acidity': r['volatile acidity'], 'density': r['density']} for _, r in onze.iterrows()],
+    'modelo_qualidade': modelo_qualidade,
     'nota7': {'tintos': int(((dd['quality'] == 7) & (dd['cor_prevista'] == 'tinto')).sum()),
               'prob09': int(((dd['quality'] == 7) & (dd['prob_tinto'] > 0.9)).sum())},
     'medias': [{'col': c, 'desafio': dd[c].mean(), 'wines': X2[c].mean()} for c in feats],
@@ -387,7 +415,7 @@ D['desafio'] = {
 
 D['meta'] = {'gerado_em': date.today().isoformat(), 'n_wines': int(len(wines)),
              'n_white': int((wines['color'] == 'white').sum()), 'n_red': int((wines['color'] == 'red').sum()),
-             'n_class': int(len(dc)), 'n_desafio': int(len(dd))}
+             'n_class': int(len(dc_bruto)), 'n_class_sem_dup': int(len(dc)), 'n_desafio': int(len(dd))}
 
 SAIDA.parent.mkdir(parents=True, exist_ok=True)
 conteudo = json.dumps(limpa(D), ensure_ascii=False, separators=(',', ':'))

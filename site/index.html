@@ -72,7 +72,7 @@
         <tbody>
           <tr><td>wines_pre_processing.csv</td><td class="num">6.497</td><td>a planilha com problemas, de onde partimos</td></tr>
           <tr><td>wines.csv</td><td class="num">6.497</td><td>a mesma planilha sem problemas, usada para conferir o tratamento</td></tr>
-          <tr><td>wine_classification.csv</td><td class="num">13.701</td><td>treino dos modelos que preveem a nota, de 3 a 8</td></tr>
+          <tr><td>wine_classification.csv</td><td class="num">13.701</td><td>treino dos modelos que preveem a nota, de 3 a 8 (7.061 depois de remover as duplicatas)</td></tr>
           <tr><td>desafio.csv</td><td class="num">13.890</td><td>garrafas novas, com nota mas sem a cor</td></tr>
         </tbody>
       </table>
@@ -280,9 +280,9 @@
       <div class="grid2 wide-left">
         <div><div id="ch-modelos" class="chart" data-chart></div></div>
         <div>
-          <p class="small">Base wine_classification.csv, com 13.701 linhas e notas de 3 a 8. Separamos 80% para treino e 20% para teste mantendo a proporção das notas, e padronizamos as variáveis só com o que o treino viu.</p>
+          <p class="small">Base wine_classification.csv, com 13.701 linhas e notas de 3 a 8. Quase metade eram cópias: removemos 6.640 duplicatas antes de separar treino e teste, senão a mesma linha cai nos dois lados e o modelo acerta por memória. Ficaram 7.061 linhas, 80% para treino e 20% para teste, com o scaler dentro do pipeline.</p>
           <div id="tb-modelos"></div>
-          <p class="small fragment rise" style="margin-top:.5em">Random Forest e XGBoost empatam na frente. AdaBoost foi o pior, com dificuldade nas notas 7 e 8.</p>
+          <p class="small fragment rise" style="margin-top:.5em">O SVM lidera acurácia e F1. XGBoost, CatBoost e Random Forest vêm logo atrás, em torno de 0,68. AdaBoost foi o pior. As notas 7 e 8 são as mais difíceis para todos.</p>
         </div>
       </div>
     </section>
@@ -295,7 +295,7 @@
         <div><div id="ch-roc" class="chart tall" data-chart></div></div>
         <div>
           <p class="small">Cada curva é a média das seis curvas "uma nota contra as outras". Quanto mais perto do canto superior esquerdo, melhor o modelo separa as notas.</p>
-          <div class="card dark fragment rise"><p class="small">Random Forest (0,989) e XGBoost (0,986) ficam quase colados no canto. CatBoost com 100 iterações vem atrás (0,968) e AdaBoost fecha a lista (0,855).</p></div>
+          <div class="card dark fragment rise"><p class="small">XGBoost (0,923), CatBoost e SVM (0,918) ficam à frente, com Random Forest logo atrás (0,908). KNN (0,857) e AdaBoost (0,841) fecham a lista.</p></div>
         </div>
       </div>
     </section>
@@ -316,12 +316,12 @@
     <!-- 19 otimização e Naive Bayes -->
     <section data-tone="light" data-init="otimizacao">
       <span class="pill">Classificação · otimização e Naive Bayes</span>
-      <h2>Otimização do Random Forest e Naive Bayes</h2>
+      <h2>Otimização de hiperparâmetros e Naive Bayes</h2>
       <div class="grid2">
         <div>
           <div class="card" id="busca-1"></div>
           <div class="card" id="busca-2" style="margin-top:.5em"></div>
-          <p class="small fragment rise" style="margin-top:.5em">As duas buscas ficaram no patamar dos parâmetros padrão. O modelo padrão já tira dessa base quase tudo que ela tem para dar.</p>
+          <p class="small fragment rise" style="margin-top:.5em">O Random Forest não ganhou nada com a busca. O SVM otimizado subiu para 0,733 de acurácia e 0,692 de F1 e virou o melhor modelo do bloco.</p>
         </div>
         <div>
           <div class="grid2">
@@ -346,6 +346,7 @@
             <li class="fragment rise">Treinamos um classificador de cor no wines.csv com os mesmos seis algoritmos. Todos passaram de 0,99 de F1.</li>
             <li class="fragment rise">Comparamos treino e validação em validação cruzada para checar sobreajuste. A diferença de F1 ficou abaixo de 0,008 em todos.</li>
             <li class="fragment rise">Ficamos com o XGBoost: acurácia de 0,996 e precisão de 0,996 para a classe tinto.</li>
+            <li class="fragment rise">Testamos o modelo de qualidade nas garrafas: a nota prevista bate com a coluna quality em só 13% a 15%, nível do acaso, porque as medidas do desafio estão fora da faixa de treino. Por isso usamos a coluna quality da própria base.</li>
           </ol>
         </div>
         <div><div id="tb-cv"></div></div>
@@ -380,7 +381,7 @@
         <div><div id="ch-medias" class="chart" data-chart></div></div>
         <div>
           <p class="small">O açúcar residual médio é <span class="hl">42,6 g/L</span>, contra 5,4 no wines.csv. O SO2 total é 256 contra 116, e a densidade 1,020 contra 0,995.</p>
-          <div class="card sand fragment rise"><svg class="ico"><use href="#i-alert"/></svg><p class="small">O classificador de cor está prevendo em uma região que ele nunca viu. Por isso as probabilidades de 0,78 e 0,63 pedem cuidado: vale confirmar a cor das duas garrafas antes de servir.</p></div>
+          <div class="card sand fragment rise"><svg class="ico"><use href="#i-alert"/></svg><p class="small">O classificador de cor está prevendo em uma região que ele nunca viu, e o Random Forest de qualidade dá nota 3 às duas garrafas que a coluna quality marca como 8. As probabilidades de 0,78 e 0,63 pedem cuidado: vale confirmar a cor das duas antes de servir.</p></div>
         </div>
       </div>
     </section>
@@ -393,7 +394,7 @@
         <div class="card fragment rise"><svg class="ico"><use href="#i-flask"/></svg><h3>Tratamento</h3><p class="small">Recuperamos a planilha com desvio de média abaixo de 0,03%. Converter tudo para número resolveu texto e vazio de uma vez.</p></div>
         <div class="card fragment rise"><svg class="ico"><use href="#i-trend"/></svg><h3>Regressão</h3><p class="small">Logística não serve para preencher um número contínuo. A polinomial de grau 2 errou 0,40 grau nas 15 linhas, contra 0,51 da logística e 1,09 da mediana. O KNN empatou.</p></div>
         <div class="card fragment rise"><svg class="ico"><use href="#i-bars"/></svg><h3>Exploração</h3><p class="small">Densidade e álcool têm a relação mais forte entre as medidas. O álcool é a única variável com correlação acima de 0,4 com a nota. Os outliers de açúcar são quase todos brancos.</p></div>
-        <div class="card dark fragment rise"><svg class="ico"><use href="#i-layers"/></svg><h3>Classificação e desafio</h3><p class="small">Random Forest e XGBoost chegaram a 91% de acurácia e AUC acima de 0,98. A otimização ficou no patamar do padrão e o Naive Bayes em 55%. No desafio, duas garrafas atendem à regra.</p></div>
+        <div class="card dark fragment rise"><svg class="ico"><use href="#i-layers"/></svg><h3>Classificação e desafio</h3><p class="small">Sem as duplicatas, os modelos ficam entre 58% e 73% de acurácia. O SVM otimizado lidera (73%, AUC 0,93) e o Random Forest não ganhou com a busca. Naive Bayes em 54%. No desafio, duas garrafas atendem à regra.</p></div>
       </div>
     </section>
 
@@ -402,7 +403,7 @@
       <span class="pill">Limitações e próximos passos</span>
       <h2>Dois pontos de atenção</h2>
       <div class="grid2">
-        <div class="card sand fragment rise"><svg class="ico"><use href="#i-alert"/></svg><h3>Duplicatas na base de classificação</h3><p class="small">6.640 das 13.701 linhas são cópias. Parte do teste tem uma linha igual no treino, o que favorece modelos que memorizam e infla a acurácia. O próximo passo seria remover as duplicatas antes de dividir e rodar tudo de novo.</p></div>
+        <div class="card sand fragment rise"><svg class="ico"><use href="#i-alert"/></svg><h3>Base de classificação pequena depois da limpeza</h3><p class="small">Com as 6.640 duplicatas removidas, a acurácia caiu de 91% para cerca de 68%. Esse é o número honesto, mas sobraram 7.061 linhas de uma base que parece reamostrada. O próximo passo seria validação cruzada repetida para medir a incerteza e comparar com notas reais.</p></div>
         <div class="card sand fragment rise"><svg class="ico"><use href="#i-eye"/></svg><h3>Desafio fora da distribuição</h3><p class="small">As medidas do desafio.csv estão longe da faixa do wines.csv, então o classificador de cor está extrapolando. O próximo passo seria confirmar a cor das garrafas escolhidas e treinar com dados na mesma faixa.</p></div>
       </div>
       <p class="small" style="margin-top:1em">Código, notebook e relatório completo: <a href="https://github.com/CarlosHenriqueBZ/tropadoml" target="_blank" rel="noopener">github.com/CarlosHenriqueBZ/tropadoml</a></p>

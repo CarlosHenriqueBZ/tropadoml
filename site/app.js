@@ -267,7 +267,7 @@
       type: 'bar', name: nome, x: r.map(m => m.modelo), y: r.map(m => zero ? 0 : m[k]), marker: { color: cor },
       hovertemplate: `%{x}<br>${nome}: %{y:.3f}<extra></extra>`,
     }));
-    const lay = layout(el, { barmode: 'group', yaxis: { range: [0.4, 1.02], title: { text: 'no teste (2.741 vinhos)' } }, legend: { y: -0.2 } });
+    const lay = layout(el, { barmode: 'group', yaxis: { range: [0.4, 1.02], title: { text: `no teste (${D.classificacao.n_teste.toLocaleString('pt-BR')} vinhos)` } }, legend: { y: -0.2 } });
     Plotly.newPlot(el, dados(true), lay, CFG).then(() =>
       Plotly.animate(el, { data: dados(false) }, { transition: { duration: 900, easing: 'cubic-in-out' }, frame: { duration: 900 } }));
   };
@@ -375,10 +375,12 @@
 
   inits['otimizacao'] = () => {
     const b = D.classificacao.rf_otimizado;
-    const nomeP = { criterion: 'critério', max_depth: 'profundidade', max_features: 'variáveis por divisão', min_samples_leaf: 'mín. por folha', min_samples_split: 'mín. por divisão', n_estimators: 'árvores' };
+    const nomeP = { criterion: 'critério', max_depth: 'profundidade', max_features: 'variáveis por divisão', min_samples_leaf: 'mín. por folha', min_samples_split: 'mín. por divisão', n_estimators: 'árvores', C: 'C', gamma: 'gamma' };
+    const val = v => v === null ? 'sem limite' : (typeof v === 'number' && !Number.isInteger(v) ? fmt(v, 3) : v);
     b.forEach((s, i) => {
       const el = byId(`busca-${i + 1}`);
-      el.innerHTML = `<h3>Busca ${s.busca}</h3><p class="tiny" style="color:inherit;opacity:.75">${Object.entries(s.params).map(([k, v]) => `${nomeP[k] || k}: <b>${v === null ? 'sem limite' : v}</b>`).join(' · ')}</p>` +
+      if (!el) return;
+      el.innerHTML = `<h3>${s.modelo}</h3><p class="tiny" style="color:inherit;opacity:.75">${Object.entries(s.params).map(([k, v]) => `${nomeP[k] || k}: <b>${val(v)}</b>`).join(' · ')}</p>` +
         `<p class="small">recall macro na validação cruzada: <span class="hl">${fmt(s.recall_cv, 3)}</span><br>` +
         `teste: acurácia ${fmt(s.teste.acc, 3)}, F1 macro ${fmt(s.teste.f1, 3)}, AUC ${fmt(s.teste.auc, 3)}</p>`;
     });

@@ -22,7 +22,7 @@ Recebemos uma planilha com medidas físico-químicas de 6.497 vinhos: onze medid
 |---|---|---|
 | wines_pre_processing.csv | 6.497 | a planilha com problemas, de onde partimos |
 | wines.csv | 6.497 | a mesma planilha sem problemas, usada para conferir o tratamento |
-| wine_classification.csv | 13.701 | treino dos modelos que preveem a nota, de 3 a 8 |
+| wine_classification.csv | 13.701 | treino dos modelos que preveem a nota, de 3 a 8 (7.061 depois de remover duplicatas) |
 | desafio.csv | 13.890 | garrafas novas, com nota mas sem a coluna de cor |
 
 No wines.csv há 4.898 brancos e 1.599 tintos. As notas se concentram em 5, 6 e 7: 94,9% dos tintos e 92,6% dos brancos estão nessa faixa. Só 30 vinhos têm nota 3 e só 5 têm nota 9, todos brancos.
@@ -119,38 +119,44 @@ A correlação positiva mais forte, SO2 livre com SO2 total, é aritmética: o t
 
 ### 6.1 Base e preparação
 
-A base wine_classification.csv tem 13.701 linhas e notas de 3 a 8. A distribuição é bem diferente do wines.csv: a nota 3 é a mais frequente, com 4.719 linhas, e a nota 8 tem 1.271. A base também tem 6.640 linhas duplicadas, sem contar as colunas de índice. Isso indica uma base gerada ou reamostrada para balancear as classes, e traz um ponto de atenção que discutimos no fim desta seção.
+A base wine_classification.csv tem 13.701 linhas e notas de 3 a 8. A distribuição é bem diferente do wines.csv: a nota 3 é a mais frequente, com 4.719 linhas, e a nota 8 tem 1.271. Isso indica uma base gerada ou reamostrada para balancear as classes.
 
-Passamos o alvo por LabelEncoder para virar inteiros de 0 a 5, exigência do XGBoost. Dividimos 80% para treino e 20% para teste, mantendo a proporção das notas, com semente 12. Padronizamos as variáveis com StandardScaler ajustado só no treino, o que importa para KNN e SVM, sensíveis a escala.
+A base também tem 6.640 linhas duplicadas, sem contar as colunas de índice. Na primeira versão do trabalho elas ficaram, e o resultado foi um teste contaminado: 72,5% das linhas de teste tinham uma cópia idêntica no treino, e os modelos acertavam por memória. O Random Forest marcava 91% de acurácia nesse teste; avaliado só nas linhas sem cópia, caía para 68%. Por isso removemos as duplicatas antes de separar treino e teste. Ficaram 7.061 linhas: 2.337 de nota 3, 1.173 de nota 4, 1.325 de nota 5, 910 de nota 6, 633 de nota 7 e 683 de nota 8.
+
+Passamos o alvo por LabelEncoder para virar inteiros de 0 a 5, exigência do XGBoost. Dividimos 80% para treino (5.648 linhas) e 20% para teste (1.413), mantendo a proporção das notas, com semente 12. O StandardScaler entra como primeiro passo de cada pipeline e é ajustado só no treino, o que importa para KNN e SVM, sensíveis a escala.
 
 ### 6.2 Pipeline com seis algoritmos
 
-O enunciado pede ao menos cinco algoritmos, incluindo uma floresta aleatória, dois de boosting, SVM e KNN. Treinamos seis, todos com os parâmetros padrão e 100 estimadores onde se aplica. Usamos métricas macro, que dão o mesmo peso a cada nota, para as classes maiores não dominarem o resultado. No teste, com 2.741 vinhos:
+O enunciado pede ao menos cinco algoritmos, incluindo uma floresta aleatória, dois de boosting, SVM e KNN. Treinamos seis, todos com os parâmetros padrão e 100 estimadores onde se aplica. Usamos métricas macro, que dão o mesmo peso a cada nota, e o ROC AUC macro entra no mesmo DataFrame de resultados. No teste, com 1.413 vinhos:
 
 | Modelo | Acurácia | Precisão | Recall | F1 | ROC AUC (macro) |
 |---|---|---|---|---|---|
-| KNN | 0,708 | 0,683 | 0,637 | 0,653 | 0,931 |
-| Random Forest | 0,913 | 0,914 | 0,896 | 0,905 | 0,989 |
-| CatBoost | 0,819 | 0,806 | 0,772 | 0,786 | 0,968 |
-| AdaBoost | 0,603 | 0,523 | 0,507 | 0,504 | 0,855 |
-| XGBoost | 0,914 | 0,909 | 0,898 | 0,903 | 0,986 |
-| SVM | 0,749 | 0,733 | 0,676 | 0,695 | 0,936 |
+| KNN | 0,637 | 0,608 | 0,563 | 0,577 | 0,857 |
+| Random Forest | 0,679 | 0,652 | 0,608 | 0,622 | 0,908 |
+| CatBoost | 0,679 | 0,644 | 0,630 | 0,636 | 0,918 |
+| AdaBoost | 0,582 | 0,528 | 0,489 | 0,488 | 0,841 |
+| XGBoost | 0,682 | 0,646 | 0,620 | 0,629 | 0,923 |
+| SVM | 0,708 | 0,684 | 0,637 | 0,652 | 0,918 |
 
-Random Forest e XGBoost empatam na frente, com 91% de acurácia e AUC acima de 0,98. CatBoost com 100 iterações fica atrás, e AdaBoost tem o pior resultado, com dificuldade especial nas notas 7 e 8 (recall de 0,13 e 0,24). KNN e SVM ficam no meio. No gráfico de importância das variáveis, feito para Random Forest e XGBoost, a distribuição é bem espalhada: o dióxido de enxofre total é a variável mais usada nos dois modelos (12% a 13% da importância) e a densidade é a menos usada (5% a 6%). As demais ficam entre 7% e 11%. Nenhuma variável manda sozinha: a nota depende da combinação de muitas medidas.
+Sem as duplicatas, os números caem para um patamar realista. O SVM lidera em acurácia e F1, o XGBoost tem o maior AUC, e CatBoost e Random Forest vêm logo atrás, em torno de 0,68 de acurácia. AdaBoost tem o pior resultado. As notas 7 e 8 são as mais difíceis para todos os modelos.
+
+No gráfico de importância das variáveis, feito para Random Forest e XGBoost, a distribuição é bem espalhada: o dióxido de enxofre total é a variável mais usada nos dois modelos (12% a 13% da importância) e a densidade é a menos usada (5% a 6%). As demais ficam entre 7% e 11%. Nenhuma variável manda sozinha.
 
 ### 6.3 Otimização de hiperparâmetros
 
-Escolhemos o Random Forest para otimizar. A busca usou Hyperopt com o algoritmo TPE, 50 avaliações, e recall macro em validação cruzada estratificada de cinco partes como objetivo. O espaço cobriu número de árvores (100 a 600), profundidade máxima, mínimo de amostras por divisão e por folha, número de variáveis por divisão e critério (gini ou entropia).
+Otimizamos dois modelos com Hyperopt: algoritmo TPE, 50 avaliações e recall macro em validação cruzada estratificada de cinco partes como objetivo. O scaler fica dentro do pipeline, ajustado só nas partes de treino de cada dobra, para não vazar informação da validação.
 
-A primeira busca encontrou entropia, profundidade 24, log2 variáveis por divisão, 200 árvores, mínimo de 6 amostras por divisão e 1 por folha, com recall macro de 0,832 na validação cruzada. No teste esse modelo ficou com acurácia de 0,91, recall macro de 0,89 e F1 macro de 0,90, praticamente igual ao Random Forest padrão. Achamos que a limitação da profundidade estava segurando o ganho, então na segunda busca liberamos a profundidade e colocamos o scaler dentro do pipeline de validação cruzada. Na reexecução, a segunda busca chegou a gini, profundidade 30, log2 variáveis por divisão, 450 árvores, mínimo de 4 amostras por divisão e 1 por folha, com recall macro de 0,834 na validação cruzada. No teste, o modelo ficou com acurácia de 0,914, F1 macro de 0,905 e AUC de 0,988, o mesmo patamar do Random Forest padrão. As duas buscas nos mostraram que os parâmetros padrão já tiram dessa base quase tudo que ela tem para dar, e que o ganho da otimização aqui está na segunda casa decimal.
+Para o Random Forest, o espaço cobriu número de árvores (100 a 600), profundidade máxima (de 5 a 50 ou ilimitada), mínimo de amostras por divisão e por folha, número de variáveis por divisão e critério (gini ou entropia). A busca chegou a gini, profundidade 15, sqrt variáveis por divisão, 150 árvores, mínimo de 6 amostras por divisão e 1 por folha, com recall macro de 0,582 na validação cruzada. No teste: acurácia 0,674, F1 macro 0,617 e AUC 0,910, contra 0,679, 0,622 e 0,908 do Random Forest padrão. Nenhum ganho.
+
+Para o SVM, que liderou o pipeline inicial, o espaço cobriu C (de 0,1 a 100, em escala logarítmica) e gamma do kernel rbf (de 0,001 a 10). A busca chegou a C = 97,2 e gamma = 0,029, com recall macro de 0,677 na validação cruzada. No teste: acurácia 0,733, precisão macro 0,706, recall macro 0,683, F1 macro 0,692 e AUC 0,925, contra 0,708, 0,684, 0,637, 0,652 e 0,918 do SVM padrão. É o melhor modelo do bloco e o que usamos como modelo de qualidade daqui em diante. As notas 7 e 8 continuam as mais difíceis, com recall de 0,50 e 0,56.
 
 ### 6.4 Naive Bayes
 
-O Naive Bayes gaussiano, pedido no fim do bloco, teve acurácia de 0,55 e F1 macro de 0,50 no mesmo teste, bem abaixo dos modelos de árvore. O motivo está na hipótese do método: ele assume que, dentro de cada nota, as variáveis são independentes entre si. Para verificar, calculamos a correlação entre as variáveis separadamente para cada nota. Em todas as classes há entre 15 e 23 pares com correlação forte (acima de 0,4 em módulo), de 55 pares possíveis. A hipótese de independência não se sustenta nesses dados, e o modelo paga por isso.
+O Naive Bayes gaussiano, pedido no fim do bloco, teve acurácia de 0,54 e F1 macro de 0,50 no mesmo teste, abaixo dos modelos de árvore e do SVM e no patamar do AdaBoost. O motivo está na hipótese do método: ele assume que, dentro de cada nota, as variáveis são independentes entre si. Para verificar, calculamos a correlação entre as variáveis separadamente para cada nota. Em todas as classes há entre 16 e 22 pares com correlação forte (acima de 0,4 em módulo), de 55 pares possíveis, ou seja, de 29% a 40% dos pares. A hipótese de independência não se sustenta nesses dados, e o modelo paga por isso.
 
 ### 6.5 Ponto de atenção
 
-As 6.640 linhas duplicadas da base de classificação fazem com que parte dos vinhos do teste tenha uma cópia idêntica no treino. Isso favorece modelos que memorizam, como florestas com árvores profundas e KNN, e tende a inflar as métricas. Os 91% de acurácia devem ser lidos como desempenho nessa base, e não como expectativa para vinhos novos. O próximo passo seria remover as duplicatas antes da divisão e rodar o pipeline de novo.
+Os 68% a 71% de acurácia são o desempenho real dessa base depois da limpeza, bem abaixo dos 91% da versão com duplicatas. A base ficou com 7.061 linhas e parece reamostrada, então esses números valem para ela, e não para vinhos novos. Um próximo passo seria validação cruzada repetida para medir a incerteza das métricas, e uma comparação com uma base de notas reais.
 
 ## 7. Desafio final
 
@@ -158,9 +164,11 @@ O pedido é escolher três garrafas da base desafio.csv para um crítico que só
 
 Treinamos um classificador de cor no wines.csv, com as mesmas onze variáveis e o mesmo conjunto de seis algoritmos. Todos passaram de 0,99 de F1 macro no teste. Para checar sobreajuste, comparamos treino e validação em validação cruzada de cinco partes: a diferença de F1 ficou abaixo de 0,008 em todos os modelos. Ficamos com o XGBoost, com acurácia de 0,996 na validação e precisão de 0,996 para a classe tinto.
 
-Aplicado ao desafio, o modelo previu 2.149 tintos e 11.741 brancos. Entre as 13.890 garrafas, só 11 têm nota 8 ou 9 (6 e 5, respectivamente). Dessas 11, o modelo classificou 9 como brancas e 2 como tintas, ambas de nota 8, com probabilidade de tinto de 0,78 e 0,63. Segundo o modelo, não existem três tintos que atendam à regra do crítico. As duas garrafas estão registradas na última célula do notebook. Nossa recomendação é servir essas duas e levar à direção a decisão sobre a terceira: liberar um tinto de nota 7 (há 41 previstos, 31 deles com probabilidade de tinto acima de 0,9) ou servir só duas.
+O enunciado fala em usar o modelo validado, então, antes de confiar na coluna quality que já vem no desafio.csv, testamos aplicar o modelo de qualidade às garrafas. A concordância entre a nota prevista pelo Random Forest otimizado e a coluna quality foi de 15,1%, e de 13,3% para o SVM otimizado, no nível do acaso para seis classes (16,7%). O motivo é que as medidas do desafio estão longe da faixa de treino: açúcar residual mediano de 46,8 g/L contra 8,4, dióxido de enxofre total de 274 contra 142 e densidade de 1,022 contra 0,997. O modelo está extrapolando e a nota prevista não é confiável aqui: ele marca 2.519 garrafas como nota 8 e dá nota 3 às duas garrafas que escolhemos abaixo. Por isso o recorte de nota 8 ou 9 usa a coluna quality da própria base.
 
-Há uma ressalva. As medidas do desafio.csv estão longe da faixa do wines.csv: o açúcar residual médio é 42,6 g/L contra 5,4, o dióxido de enxofre total é 256 contra 116 e a densidade média é 1,020 contra 0,995. O classificador de cor está prevendo em uma região que ele nunca viu, então as probabilidades pedem cuidado, em especial as duas garrafas com 0,78 e 0,63. Antes de servir, vale confirmar a cor das duas por inspeção direta.
+Aplicado ao desafio, o modelo de cor previu 2.149 tintos e 11.741 brancos. Entre as 13.890 garrafas, só 11 têm nota 8 ou 9 (6 e 5, respectivamente). Dessas 11, o modelo classificou 9 como brancas e 2 como tintas, ambas de nota 8, com probabilidade de tinto de 0,78 e 0,63. Segundo o modelo, não existem três tintos que atendam à regra do crítico. As duas garrafas estão registradas na última célula do notebook. Nossa recomendação é servir essas duas e levar à direção a decisão sobre a terceira: liberar um tinto de nota 7 (há 41 previstos, 31 deles com probabilidade de tinto acima de 0,9) ou servir só duas.
+
+Há uma ressalva. As medidas do desafio.csv também estão longe da faixa do wines.csv: o açúcar residual médio é 42,6 g/L contra 5,4, o dióxido de enxofre total é 256 contra 116 e a densidade média é 1,020 contra 0,995. O classificador de cor está prevendo em uma região que ele nunca viu, então as probabilidades pedem cuidado, em especial as duas garrafas com 0,78 e 0,63. Antes de servir, vale confirmar a cor das duas por inspeção direta.
 
 ## 8. O que aprendemos
 
@@ -170,10 +178,10 @@ A regressão logística não serve para preencher uma variável contínua: trans
 
 Na exploração, densidade e álcool têm a relação mais forte entre as medidas físico-químicas, e o álcool é a única variável com correlação acima de 0,4 com a nota. Os outliers de açúcar são quase todos brancos.
 
-Na classificação, Random Forest e XGBoost chegaram a 91% de acurácia e AUC acima de 0,98, a otimização por Hyperopt ficou no patamar dos parâmetros padrão, e o Naive Bayes ficou em 55% por causa da dependência entre as variáveis. As duplicatas da base de classificação e a distância entre o desafio.csv e a base de treino são as duas limitações que mais pesam sobre esses números.
+Na classificação, remover as 6.640 duplicatas derrubou a acurácia de 91% para 68% a 71%, e esse é o número honesto. O SVM lidera acurácia e F1, o XGBoost lidera AUC, e a otimização por Hyperopt só valeu para o SVM, que subiu para 0,733 de acurácia e 0,692 de F1 macro e ficou como modelo escolhido. O Naive Bayes ficou em 54% por causa da dependência entre as variáveis. A distância entre o desafio.csv e as bases de treino é a limitação que mais pesa sobre os números do desafio.
 
 No desafio, só duas garrafas atendem à regra do crítico segundo o modelo, e a decisão sobre a terceira é da direção.
 
 ## 9. Reprodução
 
-O notebook roda em Python 3.14 com pandas, numpy, scikit-learn, seaborn, matplotlib, plotly, statsmodels, xgboost, catboost e hyperopt. Os caminhos dos dados são relativos à pasta `notebooks/`. A busca de hiperparâmetros da seção 6.3 leva alguns minutos; o notebook guarda os parâmetros encontrados na primeira busca em uma célula própria para permitir pular essa etapa. Limpamos os outputs das células antes de cada commit, conforme o README.
+O notebook roda em Python 3.14 com pandas, numpy, scikit-learn, seaborn, matplotlib, plotly, statsmodels, xgboost, catboost e hyperopt. Os caminhos dos dados são relativos à pasta `notebooks/`. As duas buscas de hiperparâmetros da seção 6.3 levam cerca de dez minutos no total. Limpamos os outputs das células antes de cada commit, conforme o README.

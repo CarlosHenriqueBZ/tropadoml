@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Qualidade de vinhos · apresentação</title>
+  <meta name="description" content="Apresentação interativa do trabalho final de Machine Learning: tratamento, regressão, exploração e classificação de vinhos.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='12' width='10' height='10' rx='3' fill='%23b7cbb0'/%3E%3Crect x='12' y='2' width='10' height='10' rx='3' fill='%233d5647'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol>
+    <symbol id="i-bars" viewBox="0 0 24 24"><path d="M5 20v-8M11 20V5M17 20v-5M2 20h20"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3 2 8l10 5 10-5-10-5z"/><path d="m2 13 10 5 10-5"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5 9.5 18 20 6"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  </defs>
+</svg>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- 1 capa -->
+    <section class="capa">
+      <svg class="marca" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="12" width="10" height="10" rx="3"/><rect x="12" y="2" width="10" height="10" rx="3"/></svg>
+      <span class="pill">Machine Learning · trabalho final</span>
+      <h1>Qualidade de vinhos, do dado sujo à garrafa servida</h1>
+      <p class="sub">Tratamento, regressão, exploração e classificação em 6.497 vinhos da Vini Tradizionali di Manduria.</p>
+      <p class="equipe">Equipe <b>Paulo</b> · <b>Carlos</b> · <b>Bia</b> · <b>Julia</b><br>
+        <span class="tiny">Pós-graduação em Inteligência Artificial para Negócios · Professor André Juan Costa Vieira</span></p>
+      <aside class="notes">Abrir com o contexto: a vinícola entregou planilhas com problemas e pediu quatro coisas. Setas para avançar, tecla S abre estas notas.</aside>
+    </section>
+
+    <!-- 2 roteiro em escada -->
+    <section>
+      <span class="pill">Roteiro</span>
+      <h2>Quatro etapas, um dataset</h2>
+      <div class="stairs">
+        <svg class="banda" viewBox="0 0 1152 470" preserveAspectRatio="none" aria-hidden="true"><path d="M 30 240 H 252 L 306 175 H 540 L 594 110 H 828 L 882 45 H 1122"/></svg>
+        <div class="rotulo" style="left:0;top:240px">Tratamento</div>
+        <div class="rotulo" style="left:288px;top:175px">Regressão</div>
+        <div class="rotulo" style="left:576px;top:110px">Exploração</div>
+        <div class="rotulo" style="left:864px;top:45px">Classificação</div>
+        <div class="card fragment rise" style="left:0;top:282px"><svg class="ico"><use href="#i-flask"/></svg><p class="small">Recuperar a planilha com células vazias e valores adulterados, e provar que a distribuição se manteve.</p></div>
+        <div class="card fragment rise" style="left:288px;top:217px"><svg class="ico"><use href="#i-trend"/></svg><p class="small">Preencher o teor alcoólico que faltava com logística e polinomial, e explicar por que a logística não serve.</p></div>
+        <div class="card fragment rise" style="left:576px;top:152px"><svg class="ico"><use href="#i-bars"/></svg><p class="small">Gráficos interativos: notas por cor, álcool contra açúcar, outliers e correlações fortes.</p></div>
+        <div class="card fragment rise" style="left:864px;top:87px"><svg class="ico"><use href="#i-layers"/></svg><p class="small">Seis algoritmos para prever a nota, otimização, Naive Bayes e a escolha das garrafas do desafio.</p></div>
+      </div>
+    </section>
+
+    <!-- 3 dados -->
+    <section data-tone="light">
+      <span class="pill">Dados</span>
+      <h2>O que a vinícola entregou</h2>
+      <div class="grid3">
+        <div class="card" data-tone="light"><svg class="ico"><use href="#i-grid"/></svg><p class="big"><span class="count" data-to="6497">0</span><small>vinhos no wines.csv, notas de 3 a 9</small></p><div id="ch-mini-notas" class="chart mini" data-chart></div></div>
+        <div class="card dark" data-tone="dark"><svg class="ico"><use href="#i-flask"/></svg><p class="big"><span class="count" data-to="11">0</span><small>variáveis físico-químicas</small></p><p class="small" style="margin-top:.6em;opacity:.85">Acidez fixa e volátil, ácido cítrico, açúcar residual, cloretos, SO2 livre e total, densidade, pH, sulfatos e álcool.</p></div>
+        <div class="card charcoal" data-tone="dark"><svg class="ico"><use href="#i-drop"/></svg><p class="big"><span class="count" data-to="4898">0</span><small>brancos e 1.599 tintos</small></p><div id="ch-mini-cor" class="chart mini" data-chart></div></div>
+      </div>
+      <table style="margin-top:.8em">
+        <thead><tr><th>arquivo</th><th class="num">linhas</th><th>uso</th></tr></thead>
+        <tbody>
+          <tr><td>wines_pre_processing.csv</td><td class="num">6.497</td><td>planilha danificada, ponto de partida do tratamento</td></tr>
+          <tr><td>wines.csv</td><td class="num">6.497</td><td>mesma planilha íntegra, usada como gabarito</td></tr>
+          <tr><td>wine_classification.csv</td><td class="num">13.701</td><td>treino dos classificadores de qualidade, notas de 3 a 8</td></tr>
+          <tr><td>desafio.csv</td><td class="num">13.890</td><td>garrafas novas, com nota e sem a coluna de cor</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4 tratamento: o problema -->
+    <section>
+      <span class="pill">Tratamento · 1 de 2</span>
+      <h2>Dois tipos de estrago na planilha</h2>
+      <div class="grid2 wide-right">
+        <div>
+          <div class="card fragment rise"><svg class="ico"><use href="#i-grid"/></svg><p class="big"><span class="count" data-to="41">0</span><small>células vazias em 12 colunas</small></p></div>
+          <div class="card sand fragment rise" style="margin-top:.6em"><svg class="ico"><use href="#i-alert"/></svg><p class="big"><span class="count" data-to="137">0</span><small>células com texto no lugar do valor</small></p>
+            <div class="chips">
+              <span class="chip">starwars</span><span class="chip">deep learning</span><span class="chip">my precious</span><span class="chip">vinho ruim</span><span class="chip">bart</span><span class="chip">deu ruim</span><span class="chip">Julieta</span><span class="chip">[2871]</span>
+            </div>
+          </div>
+        </div>
+        <div><div id="ch-problemas" class="chart" data-chart></div></div>
+      </div>
+      <aside class="notes">Onze textos por coluna físico-química, onze na cor, cinco na nota (o índice da linha entre colchetes).</aside>
+    </section>
+
+    <!-- 5 tratamento: método e validação -->
+    <section data-tone="light">
+      <span class="pill">Tratamento · 2 de 2</span>
+      <h2>Coerção, mediana e moda. E a prova de que funcionou</h2>
+      <div class="grid2">
+        <div>
+          <ol class="steps">
+            <li class="fragment rise"><code>pd.to_numeric(errors='coerce')</code> transforma texto em vazio: os dois problemas viram um só.</li>
+            <li class="fragment rise">Nas dez colunas contínuas, o vazio recebe a mediana da coluna.</li>
+            <li class="fragment rise">Em nota e cor, que são discretas, entra a moda.</li>
+            <li class="fragment rise">Álcool fica de propósito com 15 vazios: é o alvo da regressão.</li>
+          </ol>
+          <div class="card dark fragment rise"><svg class="ico"><use href="#i-check"/></svg><p class="big">&lt; 0,03%<small>de diferença na média de cada coluna, contra o wines.csv</small></p></div>
+        </div>
+        <div><div id="ch-validacao" class="chart" data-chart></div></div>
+      </div>
+      <aside class="notes">Os erros ficaram nas discretas: 3 tintos viraram brancos pela moda e 3 notas erradas em 5. Para o volume de faltantes, mediana e moda bastam. O álcool é onde a mediana erra mais, por isso a regressão.</aside>
+    </section>
+
+    <!-- 6 regressão: conceito -->
+    <section>
+      <span class="pill">Regressão · questão 4</span>
+      <h2>Logística é classificação. Álcool é um número</h2>
+      <div class="grid2 wide-right">
+        <div>
+          <p class="small">O teor alcoólico vai de 8,0 a 14,9 e tem mais de cem valores distintos. A logística devolve a probabilidade de uma <span class="hl">categoria</span>.</p>
+          <p class="small fragment rise" data-step="faixas:1">Para usar a logística, o alvo foi cortado em três faixas por tercil: baixo (até 9,7), médio (até 11,0) e alto.</p>
+          <p class="small fragment rise" data-step="faixas:2">O modelo prevê a faixa e a linha recebe a <span class="hl">mediana da faixa</span>: 9,3, 10,4 ou 11,9. Tudo o que está dentro da faixa é descartado.</p>
+        </div>
+        <div><div id="ch-faixas" class="chart" data-chart></div></div>
+      </div>
+    </section>
+
+    <!-- 7 logística: resultados -->
+    <section data-tone="light" data-init="log-metricas">
+      <span class="pill">Regressão · questão 4</span>
+      <h2>Como classificador, ela vai bem. Como preenchimento, não</h2>
+      <div class="grid2">
+        <div>
+          <div id="tb-log"></div>
+          <p class="legenda">Teste com 1.297 vinhos, 20% dos que têm álcool conhecido. Variáveis padronizadas, divisão estratificada.</p>
+          <div class="card dark fragment rise" style="margin-top:.6em">
+            <p class="small">Nas 15 linhas faltantes, contra o wines.csv: <span class="hl">13 faixas certas</span> e AUC 0,98. Mesmo assim, erro médio de <span class="hl">0,51 grau</span>. Um vinho de 13,1 caiu na faixa certa e recebeu 11,9.</p>
+          </div>
+        </div>
+        <div><div id="ch-cm-log" class="chart" data-chart></div><p class="legenda center">Matriz de confusão no teste. A faixa do meio é a mais confundida.</p></div>
+      </div>
+    </section>
+
+    <!-- 8 polinomial: grau -->
+    <section>
+      <span class="pill">Regressão · questão 5</span>
+      <h2>Polinomial: o alvo volta a ser o número</h2>
+      <div class="grid2">
+        <div>
+          <p class="small">O pipeline padroniza as colunas, gera quadrados, cubos e produtos entre colunas, e ajusta uma regressão linear. Os graus 1, 2 e 3 foram comparados por validação cruzada de cinco partes no treino.</p>
+          <div class="card sand fragment rise"><p class="small">O grau 3 cria <span class="hl">454 colunas a partir de 12</span> e decora o treino: em algumas partes da validação o R² fica negativo.</p></div>
+          <div class="card fragment rise" style="margin-top:.5em"><p class="small">O grau 2 fica com R² médio de <span class="hl">0,867</span> e desvio pequeno. Foi o escolhido.</p></div>
+        </div>
+        <div><div id="ch-grau" class="chart" data-chart></div></div>
+      </div>
+    </section>
+
+    <!-- 9 polinomial: teste -->
+    <section data-tone="light" data-init="poli-metricas">
+      <span class="pill">Regressão · questão 5</span>
+      <h2>Grau 2 no conjunto de teste</h2>
+      <div class="grid2 wide-left">
+        <div><div id="ch-scatter-poli" class="chart tall" data-chart></div></div>
+        <div>
+          <div class="grid2">
+            <div class="card dark"><p class="big" id="kp-mae">…<small>MAE (graus)</small></p></div>
+            <div class="card dark"><p class="big" id="kp-rmse">…<small>RMSE</small></p></div>
+            <div class="card"><p class="big" id="kp-r2">…<small>R²</small></p></div>
+            <div class="card"><p class="big" id="kp-mape">…<small>MAPE</small></p></div>
+          </div>
+          <p class="small fragment rise" style="margin-top:.8em">O ponto isolado é um tinto com cloretos 0,61 e sulfatos 2,0, os maiores do dataset. O polinômio eleva isso ao quadrado e prevê 3,2 graus para um vinho de 9,4. Polinômio fora da região de treino erra feio.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 as 15 linhas -->
+    <section data-init="resumo15">
+      <span class="pill">Regressão · validação com wines.csv</span>
+      <h2>As 15 linhas, técnica por técnica</h2>
+      <div class="grid2 wide-left">
+        <div>
+          <div class="btns">
+            <button data-trace="0" class="on">real</button>
+            <button data-trace="1">mediana</button>
+            <button data-trace="2" class="on">logística</button>
+            <button data-trace="3" class="on">polinomial</button>
+            <button data-trace="4">KNNImputer</button>
+          </div>
+          <div id="ch-15" class="chart" data-chart></div>
+        </div>
+        <div>
+          <div id="tb-resumo"></div>
+          <p class="small" style="margin-top:.7em">A polinomial reduz o erro da mediana em <span class="hl">63%</span> e o da logística em <span class="hl">22%</span>. O KNN empata no MAE e perde no RMSE. Com 15 amostras, a diferença é ruído: a polinomial fica.</p>
+        </div>
+      </div>
+      <aside class="notes">Clique nos botões para ligar e desligar cada técnica. Densidade é a variável que mais ajuda (r = -0,69 com álcool).</aside>
+    </section>
+
+    <!-- 11 EDA: contagem -->
+    <section data-tone="light">
+      <span class="pill">Exploração · 1 de 4</span>
+      <h2>Notas por cor: perfis parecidos</h2>
+      <div class="grid2 wide-left">
+        <div>
+          <div class="btns"><button data-modo="abs" class="on">contagem</button><button data-modo="pct">proporção por cor</button></div>
+          <div id="ch-count-quality" class="chart" data-chart></div>
+        </div>
+        <div>
+          <p class="small">As notas se concentram em 5, 6 e 7: <span class="hl">94,9%</span> dos tintos e <span class="hl">92,6%</span> dos brancos.</p>
+          <p class="small fragment rise">Extremos são raros: 30 vinhos com nota 3 e só 5 com nota 9, todos brancos.</p>
+          <p class="small fragment rise">Em proporção, a curva dos dois tipos quase se sobrepõe. A cor não separa qualidade.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12 EDA: KDE -->
+    <section>
+      <span class="pill">Exploração · 2 de 4</span>
+      <h2>Álcool contra açúcar residual</h2>
+      <div class="grid2 wide-left">
+        <div><div id="ch-kde" class="chart tall" data-chart></div></div>
+        <div>
+          <p class="small">A densidade se concentra em açúcar abaixo de 5 g/L (<span class="hl">59,7%</span> dos vinhos) e álcool entre 9% e 12,5% (<span class="hl">88,5%</span>).</p>
+          <p class="small fragment rise">Há uma cauda de 18 vinhos com mais de 20 g/L, em geral com álcool um pouco menor. O eixo está cortado em 32 g/L; o maior valor é 65,8.</p>
+          <p class="small fragment rise">O açúcar mediano do branco (5,2 g/L) é mais que o dobro do tinto (2,2 g/L).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 EDA: outliers -->
+    <section data-tone="light">
+      <span class="pill">Exploração · 3 de 4</span>
+      <h2>Outliers de açúcar: quase todos brancos</h2>
+      <div class="grid2">
+        <div><div id="ch-box" class="chart half" data-chart></div><p class="legenda center">Boxplot por nota. Pontos fora do bigode são os outliers.</p></div>
+        <div><div id="ch-outliers" class="chart half" data-chart></div><p class="legenda center">Outliers por nota e cor, barras sobrepostas.</p></div>
+      </div>
+      <p class="small"><span class="hl">147 outliers</span> pelo critério de 1,5 vezes o intervalo interquartil dentro de cada nota. 146 são brancos e 1 é tinto; concentram-se nas notas 7 (82) e 6 (31). Coerente com a existência de brancos bem mais doces, algo raro entre os tintos.</p>
+    </section>
+
+    <!-- 14 EDA: correlação -->
+    <section data-init="pares">
+      <span class="pill">Exploração · 4 de 4</span>
+      <h2>Correlações fortes (|r| &gt; 0,4)</h2>
+      <div class="grid2 wide-left">
+        <div><div id="ch-corr" class="chart tall" data-chart></div></div>
+        <div>
+          <div id="tb-pares"></div>
+          <p class="small" style="margin-top:.6em">Entre as variáveis e a nota, a única correlação acima do corte é com o álcool (0,44).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15 EDA: scatters -->
+    <section data-tone="light">
+      <span class="pill">Exploração · os dois pares mais fortes</span>
+      <h2>Por que a nuvem sobe, e por que ela desce</h2>
+      <div class="grid2 wide-left">
+        <div>
+          <div class="btns"><button data-par="so2" class="on">SO2 livre × SO2 total (r = 0,72)</button><button data-par="dens">densidade × álcool (r = -0,69)</button></div>
+          <div id="ch-scatter" class="chart" data-chart></div>
+        </div>
+        <div>
+          <div class="card" data-par-texto="so2"><p class="small">A relação é aritmética: o SO2 total é a soma do livre com a parte combinada a outras moléculas. Quem tem mais SO2 livre tende a ter mais total, e a nuvem sobe.</p></div>
+          <div class="card" data-par-texto="dens" hidden><p class="small">Na fermentação, o açúcar (mais denso que a água) vira álcool (menos denso). Vinho com mais álcool fermentou mais e ficou menos denso, e a nuvem desce. É a variável que mais ajuda a prever o álcool.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16 classificação: pipeline -->
+    <section data-init="modelos">
+      <span class="pill">Classificação · pipeline</span>
+      <h2>Seis algoritmos para prever a nota</h2>
+      <div class="grid2 wide-left">
+        <div><div id="ch-modelos" class="chart" data-chart></div></div>
+        <div>
+          <p class="small">Base wine_classification.csv: 13.701 linhas, notas de 3 a 8, divisão 80/20 estratificada, StandardScaler ajustado só no treino.</p>
+          <div id="tb-modelos"></div>
+          <p class="small fragment rise" style="margin-top:.5em">Random Forest e XGBoost empatam na frente. AdaBoost sofre nas notas 7 e 8.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17 ROC -->
+    <section data-tone="light">
+      <span class="pill">Classificação · ROC AUC</span>
+      <h2>Curvas ROC, média macro entre as seis notas</h2>
+      <div class="grid2 wide-left">
+        <div><div id="ch-roc" class="chart tall" data-chart></div></div>
+        <div>
+          <p class="small">Cada curva é a média das seis curvas "uma nota contra as outras". Quanto mais perto do canto superior esquerdo, melhor.</p>
+          <div class="card dark fragment rise"><p class="small">Random Forest (0,989) e XGBoost (0,986) ficam quase coladas no canto. CatBoost com 100 iterações vem atrás (0,968), e AdaBoost fecha a lista (0,855).</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 18 importâncias -->
+    <section>
+      <span class="pill">Classificação · importância das variáveis</span>
+      <h2>Nenhuma variável domina</h2>
+      <div class="grid2 wide-left">
+        <div><div id="ch-imp" class="chart tall" data-chart></div></div>
+        <div>
+          <p class="small">O SO2 total é a variável mais usada nos dois modelos (12% a 13% da importância). A densidade é a menos usada (5% a 6%).</p>
+          <div class="card fragment rise"><p class="small">As demais ficam entre 7% e 11%. A nota depende da combinação de muitas medidas, e não de uma ou duas.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 19 otimização e Naive Bayes -->
+    <section data-tone="light" data-init="otimizacao">
+      <span class="pill">Classificação · otimização e Naive Bayes</span>
+      <h2>Hyperopt no Random Forest, e o limite do Naive Bayes</h2>
+      <div class="grid2">
+        <div>
+          <div class="card" id="busca-1"></div>
+          <div class="card" id="busca-2" style="margin-top:.5em"></div>
+          <p class="small fragment rise" style="margin-top:.5em">As duas buscas ficam no patamar dos parâmetros padrão. O modelo padrão já extrai quase tudo que essa base oferece.</p>
+        </div>
+        <div>
+          <div class="grid2">
+            <div class="card dark"><p class="big" id="nb-acc">…<small>acurácia do Naive Bayes</small></p></div>
+            <div class="card dark"><p class="big" id="nb-f1">…<small>F1 macro</small></p></div>
+          </div>
+          <div id="ch-corr-classe" class="chart short" data-chart></div>
+          <p class="legenda">Pares de variáveis com correlação forte dentro de cada nota, de 55 possíveis. O Naive Bayes assume que são independentes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 20 desafio: abordagem -->
+    <section data-init="cv-cor">
+      <span class="pill">Desafio final</span>
+      <h2>Três tintos de nota 8 ou 9 para o crítico</h2>
+      <div class="grid2">
+        <div>
+          <p class="small">O desafio.csv traz 13.890 garrafas com nota, mas <span class="hl">sem a cor</span>. O problema vira descobrir a cor com poucos falsos positivos: servir um branco é pior que deixar de servir um tinto.</p>
+          <ol class="steps">
+            <li class="fragment rise">Classificador de cor treinado no wines.csv com os mesmos seis algoritmos: todos acima de 0,99 de F1.</li>
+            <li class="fragment rise">Validação cruzada compara treino e validação. Diferença de F1 abaixo de 0,008 em todos.</li>
+            <li class="fragment rise">XGBoost escolhido: acurácia 0,996 e precisão 0,996 para tinto.</li>
+          </ol>
+        </div>
+        <div><div id="tb-cv"></div></div>
+      </div>
+    </section>
+
+    <!-- 21 desafio: resultado -->
+    <section data-tone="light" data-init="onze">
+      <span class="pill">Desafio final · resultado</span>
+      <h2>Só duas garrafas passam pela regra</h2>
+      <div class="fluxo">
+        <div class="card"><p class="big"><span class="count" data-to="13890">0</span><small>garrafas no desafio</small></p></div>
+        <svg class="chev fragment rise" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+        <div class="card fragment rise"><p class="big"><span class="count" data-to="11">0</span><small>com nota 8 ou 9</small></p></div>
+        <svg class="chev fragment rise" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+        <div class="card dark fragment rise"><p class="big"><span class="count" data-to="2">0</span><small>previstas tintas</small></p></div>
+      </div>
+      <div class="grid2 wide-left">
+        <div id="tb-onze"></div>
+        <div>
+          <p class="small">As duas tintas são de nota 8, com probabilidade de tinto de <span class="hl">0,78 e 0,63</span>. Não há três tintos que atendam à regra.</p>
+          <p class="small fragment rise">Recomendação: servir as duas e levar à direção a terceira. Há 41 tintos previstos de nota 7, 31 deles com probabilidade acima de 0,9.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 22 ressalva -->
+    <section>
+      <span class="pill">Desafio final · ressalva</span>
+      <h2>O desafio está longe da base de treino</h2>
+      <div class="grid2 wide-left">
+        <div><div id="ch-medias" class="chart" data-chart></div></div>
+        <div>
+          <p class="small">Açúcar residual médio de <span class="hl">42,6 g/L</span> contra 5,4 no wines.csv. SO2 total de 256 contra 116. Densidade de 1,020 contra 0,995.</p>
+          <div class="card sand fragment rise"><svg class="ico"><use href="#i-alert"/></svg><p class="small">O classificador de cor está prevendo em uma região que nunca viu. As probabilidades de 0,78 e 0,63 pedem cautela: confirmar a cor das duas garrafas por inspeção antes de servir.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 23 conclusões -->
+    <section data-tone="light">
+      <span class="pill">Conclusões</span>
+      <h2>O que fica de cada etapa</h2>
+      <div class="grid2" style="margin-top:.3em">
+        <div class="card fragment rise"><svg class="ico"><use href="#i-flask"/></svg><h3>Tratamento</h3><p class="small">Planilha recuperada com desvio de média abaixo de 0,03%. A coerção para numérico tratou texto e vazio de uma vez.</p></div>
+        <div class="card fragment rise"><svg class="ico"><use href="#i-trend"/></svg><h3>Regressão</h3><p class="small">Logística não preenche variável contínua. A polinomial de grau 2 errou 0,40 grau nas 15 linhas, contra 0,51 da logística e 1,09 da mediana. O KNN empatou.</p></div>
+        <div class="card fragment rise"><svg class="ico"><use href="#i-bars"/></svg><h3>Exploração</h3><p class="small">Densidade e álcool têm a relação mais forte entre as medidas. O álcool é a única com correlação acima de 0,4 com a nota. Outliers de açúcar são quase todos brancos.</p></div>
+        <div class="card dark fragment rise"><svg class="ico"><use href="#i-layers"/></svg><h3>Classificação e desafio</h3><p class="small">Random Forest e XGBoost com 91% de acurácia e AUC acima de 0,98. Hyperopt no patamar padrão. Naive Bayes em 55%. No desafio, duas garrafas atendem à regra; a terceira é decisão da direção.</p></div>
+      </div>
+    </section>
+
+    <!-- 24 limitações e links -->
+    <section>
+      <span class="pill">Limitações e próximos passos</span>
+      <h2>Dois pontos para ler os números com cuidado</h2>
+      <div class="grid2">
+        <div class="card sand fragment rise"><svg class="ico"><use href="#i-alert"/></svg><h3>Duplicatas na base de classificação</h3><p class="small">6.640 das 13.701 linhas são cópias. Parte do teste tem gêmeo no treino, o que favorece modelos que memorizam e infla a acurácia. Próximo passo: remover duplicatas antes da divisão e repetir.</p></div>
+        <div class="card sand fragment rise"><svg class="ico"><use href="#i-eye"/></svg><h3>Desafio fora da distribuição</h3><p class="small">As medidas do desafio.csv estão longe da faixa do wines.csv. O classificador de cor extrapola. Próximo passo: validar a cor das garrafas escolhidas por inspeção, e treinar com dados na mesma faixa.</p></div>
+      </div>
+      <p class="small" style="margin-top:1em">Código, notebook e relatório completo: <a href="https://github.com/CarlosHenriqueBZ/tropadoml" target="_blank" rel="noopener">github.com/CarlosHenriqueBZ/tropadoml</a></p>
+      <p class="tiny">Gráficos em Plotly, slides em Reveal.js. Números de uma reexecução completa do notebook em 11/09/2026.</p>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="data/data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

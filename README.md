@@ -19,6 +19,11 @@ Trabalho final da disciplina de Machine Learning — Pós-graduação em Intelig
 
 ```
 tropadoml/
+├── RELATORIO.md               # relatório final (método e resultados de cada bloco)
+├── site/                      # apresentação interativa (Reveal.js + Plotly), publicada no GitHub Pages
+│   ├── index.html
+│   ├── build_data.py          # reexecuta o notebook e gera site/data/data.js
+│   └── data/data.js
 ├── notebooks/
 │   └── Trabalho Final - Machine Learning - Classificação.ipynb
 └── data/
@@ -27,6 +32,14 @@ tropadoml/
     ├── wine_classification.csv    # dataset para modelos de classificação
     └── desafio.csv                # dataset do desafio final
 ```
+
+## Apresentação
+
+Slides interativos em `site/`, publicados pelo GitHub Pages em https://carloshenriquebz.github.io/tropadoml/ a cada push na `main` (workflow em `.github/workflows/pages.yml`).
+
+- Abrir localmente: `python -m http.server 8765` dentro de `site/` e acessar http://localhost:8765 (ou abrir `site/index.html` direto no navegador).
+- Regenerar os dados dos gráficos depois de mudar o notebook: `python site/build_data.py` (leva cerca de um minuto; precisa de xgboost, catboost e scikit-learn).
+- Na apresentação: setas para navegar, `S` abre as notas do apresentador, `F` tela cheia, `?` lista os atalhos.
 
 ## Fluxo de trabalho
 

@@ -280,7 +280,7 @@
       <div class="grid2 wide-left">
         <div><div id="ch-modelos" class="chart" data-chart></div></div>
         <div>
-          <p class="small">Base wine_classification.csv, com 13.701 linhas e notas de 3 a 8. Quase metade eram cópias: removemos 6.640 duplicatas antes de separar treino e teste, senão a mesma linha cai nos dois lados e o modelo acerta por memória. Ficaram 7.061 linhas, 80% para treino e 20% para teste, com o scaler dentro do pipeline.</p>
+          <p class="small">Base wine_classification.csv, 13.701 linhas, notas de 3 a 8. Removemos 6.640 duplicatas antes do split: com elas, a mesma linha caía no treino e no teste e o modelo acertava por memória. Ficaram 7.061 linhas, 80% treino e 20% teste.</p>
           <div id="tb-modelos"></div>
           <p class="small fragment rise" style="margin-top:.5em">O SVM lidera acurácia e F1. XGBoost, CatBoost e Random Forest vêm logo atrás, em torno de 0,68. AdaBoost foi o pior. As notas 7 e 8 são as mais difíceis para todos.</p>
         </div>
@@ -403,7 +403,7 @@
       <span class="pill">Limitações e próximos passos</span>
       <h2>Dois pontos de atenção</h2>
       <div class="grid2">
-        <div class="card sand fragment rise"><svg class="ico"><use href="#i-alert"/></svg><h3>Base de classificação pequena depois da limpeza</h3><p class="small">Com as 6.640 duplicatas removidas, a acurácia caiu de 91% para cerca de 68%. Esse é o número honesto, mas sobraram 7.061 linhas de uma base que parece reamostrada. O próximo passo seria validação cruzada repetida para medir a incerteza e comparar com notas reais.</p></div>
+        <div class="card sand fragment rise"><svg class="ico"><use href="#i-alert"/></svg><h3>Base pequena depois da limpeza</h3><p class="small">Com as 6.640 duplicatas removidas, a acurácia caiu de 91% para 68% a 73%. Esse é o número honesto, mas sobraram 7.061 linhas de uma base que parece reamostrada. O próximo passo seria validação cruzada repetida para medir a incerteza e comparar com notas reais.</p></div>
         <div class="card sand fragment rise"><svg class="ico"><use href="#i-eye"/></svg><h3>Desafio fora da distribuição</h3><p class="small">As medidas do desafio.csv estão longe da faixa do wines.csv, então o classificador de cor está extrapolando. O próximo passo seria confirmar a cor das garrafas escolhidas e treinar com dados na mesma faixa.</p></div>
       </div>
       <p class="small" style="margin-top:1em">Código, notebook e relatório completo: <a href="https://github.com/CarlosHenriqueBZ/tropadoml" target="_blank" rel="noopener">github.com/CarlosHenriqueBZ/tropadoml</a></p>

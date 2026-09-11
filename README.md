@@ -1,6 +1,6 @@
 # tropadoml
 
-Trabalho final da disciplina de Machine Learning — Pós-graduação em Inteligência Artificial para Negócios.
+Trabalho final da disciplina de Machine Learning, MBA em Ciência de Dados e IA.
 
 **Professor:** André Juan Costa Vieira
 **Tema:** Qualidade de vinhos (Vini Tradizionali di Manduria)

@@ -1,6 +1,6 @@
 # Relatório do trabalho final: qualidade de vinhos
 
-Disciplina de Machine Learning, pós-graduação em Inteligência Artificial para Negócios. Professor André Juan Costa Vieira.
+Disciplina de Machine Learning, MBA em Ciência de Dados e IA. Professor André Juan Costa Vieira.
 
 | Bloco | Responsável |
 |---|---|
